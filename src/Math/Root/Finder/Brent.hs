@@ -10,6 +10,7 @@ import Math.Root.Finder
 import Data.Maybe
 import Text.Printf
 
+-- |Working state for Brent's root-finding method.
 data Brent a b = Brent
     { brA   :: !a
     , brFA  :: !b
@@ -20,11 +21,6 @@ data Brent a b = Brent
     , brD   :: a
     , brE   :: a
     } deriving (Eq, Show)
-
-eps :: RealFloat a => a
-eps = eps'
-    where
-        eps' = encodeFloat 1 (1 - floatDigits eps')
 
 -- TODO: clean up this mess!
 instance RealFloat a => RootFinder Brent a a where
@@ -70,6 +66,9 @@ instance RealFloat a => RootFinder Brent a a where
         where
             tol1 = 4 * eps * abs b + tol
 
+-- |Attempt to find a root of a function known to lie between x1 and x2, using 
+-- Brent's method.  The root will be refined till its accuracy is +-xacc.  
+-- If convergence fails, returns the final state of the search.
 brent :: RealFloat a => (a -> a) -> a -> a -> a -> Either (Brent a a) a
 brent f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)
 

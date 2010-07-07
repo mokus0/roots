@@ -25,5 +25,8 @@ instance Fractional a => RootFinder Newton a (a,a) where
 
 -- | Using Newton's method, return a root of a function known
 -- to lie between x1 and x2.  The root is refined until its accuracy is += xacc.
+--
+-- The function passed should return a pair containing the value of the function 
+-- and its derivative, respectively.
 newton :: (Ord a, Fractional a) => (a -> (a, a)) -> a -> a -> a -> Either (Newton a (a,a)) a
 newton f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)

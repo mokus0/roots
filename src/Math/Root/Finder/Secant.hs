@@ -13,11 +13,6 @@ secant f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)
 -- |Iteratively refine 2 estimates x1, x2 of a root of f until total 
 -- convergence (which may or may not ever be achieved) using the
 -- secant method.
--- 
--- Each element of the returned list is a pair (x,dx) where
--- x is a new estimate of a root of f x and dx is the amount this
--- estimate differs from the last.
-
 data SecantMethod a b
     = ConvergedSecantMethod !a
     | SecantMethod

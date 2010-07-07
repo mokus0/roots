@@ -32,6 +32,7 @@ instance (Fractional a, Ord b, Num b) => RootFinder Bisect a b where
     estimateError (Bisect _ _ dx) = dx
 
 -- |Using bisection, return a root of a function known to lie between x1 and x2.
--- The root will be refined till its accuracy is +-xacc.
+-- The root will be refined till its accuracy is +-xacc.  If convergence fails,
+-- returns the final state of the search.
 bisection :: (Ord a, Fractional a, Ord b, Num b) => (a -> b) -> a -> a -> a -> Either (Bisect a b) a
 bisection f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)

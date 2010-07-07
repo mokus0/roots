@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 module Math.Root.Bracket where
 
+-- |Predicate that returns 'True' whenever the given pair of points brackets
+-- a root of the given function.
 brackets :: (Eq a, Num b) => (a -> b) -> (a,a) -> Bool
 brackets f (x1,x2)
     | x1 == x2  = f x1 == 0
