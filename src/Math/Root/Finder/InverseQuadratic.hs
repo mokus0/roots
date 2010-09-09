@@ -11,13 +11,20 @@ data InverseQuadratic a b = InverseQuadratic !a !b !a !b !a !b
 
 instance (Fractional a, Ord a, Real b, Fractional b) => RootFinder InverseQuadratic a b where
     initRootFinder f x1 x2 = InverseQuadratic x0 (f x0) x1 (f x1) x2 (f x2)
+        where x0 = 0.5 * (x1 + x2)
+    stepRootFinder f orig@(InverseQuadratic x0 f0 x1 f1 x2 f2)
+        | f1 /= f2  = InverseQuadratic newX newF x0 f0 x1 f1
+        | otherwise = orig
         where
-            x0 = 0.5 * (x1 + x2)
-    stepRootFinder f (InverseQuadratic x0 f0 x1 f1 x2 f2) = InverseQuadratic newX newF x0 f0 x1 f1
-        where
-            newX = realToFrac (f1 * f0 / ((f2 - f1) * (f2 - f0))) * x2
-                 + realToFrac (f2 * f0 / ((f1 - f2) * (f1 - f0))) * x1
-                 + realToFrac (f2 * f1 / ((f0 - f2) * (f0 - f1))) * x0
+            newX 
+                | f0 /= f1 && f0 /= f2 
+                    = realToFrac (f1 * f0 / ((f2 - f1) * (f2 - f0))) * x2
+                    + realToFrac (f2 * f0 / ((f1 - f2) * (f1 - f0))) * x1
+                    + realToFrac (f2 * f1 / ((f0 - f2) * (f0 - f1))) * x0
+                | otherwise
+                    -- Fall back to secant method (linear interpolation)
+                    -- when quadratic interpolation will yield nonsensical results.
+                    = x1 - realToFrac f1 * (x1 - x2) / realToFrac (f1 - f2)
             newF = f newX
     
     estimateRoot  (InverseQuadratic x0  _  _  _  _  _) = x0
