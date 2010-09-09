@@ -18,9 +18,10 @@ instance (Fractional a, Ord a, Real b, Fractional b) => RootFinder InverseQuadra
         where
             newX 
                 | f0 /= f1 && f0 /= f2 
-                    = realToFrac (f1 * f0 / ((f2 - f1) * (f2 - f0))) * x2
-                    + realToFrac (f2 * f0 / ((f1 - f2) * (f1 - f0))) * x1
-                    + realToFrac (f2 * f1 / ((f0 - f2) * (f0 - f1))) * x0
+                    = let a = realToFrac (f0 / (f2 - f1))
+                          b = realToFrac (f1 / (f2 - f0))
+                          c = realToFrac (f2 / (f1 - f0))
+                       in (a * b * x2) - (a * c * x1) + (b * c * x0)
                 | otherwise
                     -- Fall back to secant method (linear interpolation)
                     -- when quadratic interpolation will yield nonsensical results.
