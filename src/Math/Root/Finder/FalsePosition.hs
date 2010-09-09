@@ -34,7 +34,7 @@ instance (Fractional a, Ord a) => RootFinder FalsePosition a a where
     
     stepRootFinder f orig@(FalsePosition _ _ xl fl xh fh) = case compare fNew 0 of
         LT -> FalsePosition xNew (xl - xNew) xNew fNew  xh   fh
-        EQ -> orig
+        EQ -> FalsePosition xNew 0           xNew fNew  xNew fNew
         GT -> FalsePosition xNew (xh - xNew) xl   fl    xNew fNew
         where
             dx = xh - xl
