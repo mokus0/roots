@@ -6,9 +6,7 @@ module Math.Root.Bracket where
 brackets :: (Eq a, Num b) => (a -> b) -> (a,a) -> Bool
 brackets f (x1,x2)
     | x1 == x2  = f x1 == 0
-    | otherwise = signum f1 /= signum f2
-    where
-        f1 = f x1; f2 = f x2
+    | otherwise = signum (f x1) /= signum (f x2)
 
 -- |@bracket f x1 x2@: Given a function and an initial guessed range x1 to x2,
 -- this function expands the range geometrically until a root is bracketed by 
