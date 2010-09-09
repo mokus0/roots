@@ -18,7 +18,7 @@ bracket f x1 x2
     | x1 == x2  = error "bracket: empty range"
     | otherwise = go x1 (f x1) x2 (f x2)
     where
-        factor = 1.618
+        factor = 1.618 -- golden ratio (close enough to it, anyway)
         go x1 f1 x2 f2
             | signum f1 /= signum f2    = [(x1, x2)]
             | abs f1 < abs f2           = (x1, x2) : go x1' (f x1') x2 f2
