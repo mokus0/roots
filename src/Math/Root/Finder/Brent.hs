@@ -31,9 +31,8 @@ instance RealFloat a => RootFinder Brent a a where
         where f1 = f x1; f2 = f x2; dx = x2 - x1
     
     stepRootFinder f r@(Brent a fa b fb c fc e)
-        |  abs fa > abs fb
-        && abs e                >= 2 * min tol1 abs_s
-        && 1.5 * m * signum s   >= tol1 + abs_s
+        |  abs e                >= 2 * min tol1 abs_s       -- require that the method be making progress, overall
+        && 1.5 * m * signum s   >= tol1 + abs_s             -- require that the proposed step is getting closer to 'b' - specifically, s should be between 0 and 0.75*(c - b)
                     = advance s s
         | otherwise = advance m (b - a)
         where
