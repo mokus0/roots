@@ -12,8 +12,8 @@ homepage:               /dev/null
 
 category:               Math, Numerical
 synopsis:               Root-finding algorithms
-description:            Framework and algorithms for numerical root-finding
-                        algorithms.
+description:            Framework for and a few implementations of
+                        numerical root-finding algorithms.
 
 tested-with:            GHC == 6.8.3,
                         GHC == 6.10.4,
