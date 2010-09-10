@@ -2,6 +2,7 @@
 module Math.Root.Finder where
 
 import Control.Monad.Instances ()
+import Data.Tagged
 
 -- |General interface for numerical root finders.
 class RootFinder r a b where
@@ -30,9 +31,11 @@ class RootFinder r a b where
     converged xacc r = abs (estimateError r) <= abs xacc
     
     -- |Default number of steps after which root finding will be deemed 
-    -- to have failed.
-    defaultNSteps :: r a b -> Int
-    defaultNSteps _ = 250
+    -- to have failed.  Purely a convenience used to control the behavior
+    -- of built-in functions such as 'findRoot' and 'traceRoot'.  The
+    -- default value is 250.
+    defaultNSteps :: Tagged (r a b) Int
+    defaultNSteps = Tagged 250
 
 -- |@traceRoot f x0 x1 mbEps@ initializes a root finder and repeatedly
 -- steps it, returning each step of the process in a list.  When the algorithm
@@ -46,7 +49,7 @@ traceRoot :: (Eq (r a b), RootFinder r a b, Num a, Ord a) =>
              (a -> b) -> a -> a -> Maybe a -> [r a b]
 traceRoot f a b xacc = go nSteps start (stepRootFinder f start)
     where
-        nSteps = defaultNSteps start
+        Tagged nSteps = (const :: Tagged a b -> a -> Tagged a b) defaultNSteps start
         start = initRootFinder f a b
         
         -- lookahead 1; if tracing with no convergence test, apply a
@@ -68,7 +71,7 @@ findRoot :: (RootFinder r a b, Num a, Ord a) =>
             (a -> b) -> a -> a -> a -> Either (r a b) (r a b)
 findRoot f a b xacc = go nSteps start
     where
-        nSteps = defaultNSteps start
+        Tagged nSteps = (const :: Tagged a b -> a -> Tagged a b) defaultNSteps start
         start = initRootFinder f a b
         
         go n x

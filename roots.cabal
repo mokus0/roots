@@ -37,4 +37,4 @@ Library
                         Math.Root.Finder.Ridders
                         Math.Root.Finder.Secant
                         
-  build-depends:        base >= 3 && <5
+  build-depends:        base >= 3 && <5, tagged
