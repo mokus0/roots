@@ -5,8 +5,9 @@ module Math.Root.Finder.FalsePosition
 
 import Math.Root.Finder
 
--- | Using the false-position method, return a root of a function known
--- to lie between x1 and x2.  The root is refined until its accuracy is += xacc.
+-- | @falsePosition f x1 x2 xacc@:  Using the false-position method, return a
+-- root of a function known to lie between x1 and x2.  The root is refined 
+-- until its accuracy is += xacc.
 falsePosition :: (Ord a, Fractional a) => (a -> a) -> a -> a -> a -> Either (FalsePosition a a) a
 falsePosition f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)
 
