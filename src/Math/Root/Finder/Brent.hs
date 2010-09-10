@@ -32,13 +32,14 @@ instance RealFloat a => RootFinder Brent a a where
     
     stepRootFinder f r@(Brent a fa b fb c fc e)
         |  abs fa > abs fb
-        && abs e                      >= min tol1 (2 * abs s)
-        && (3 * m - 2 * s) * signum s >= tol1
-                                = advance s s
-        |  otherwise            = advance m (b - a)
+        && abs e                >= 2 * min tol1 abs_s
+        && 1.5 * m * signum s   >= tol1 + abs_s
+                    = advance s s
+        | otherwise = advance m (b - a)
         where
             -- Minimum step size to continue with inverse-quadratic interpolation
-            tol1  = 2 * eps * (abs b + 0.5)
+            tol1  = eps * (abs b + 0.5)
+            abs_s = abs s
             
             -- midpoint for bisection step
             m = 0.5 * (c - b)
