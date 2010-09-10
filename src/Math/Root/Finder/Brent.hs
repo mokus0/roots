@@ -10,6 +10,10 @@ import Math.Root.Finder
 import Data.Maybe
 import Text.Printf
 
+-- Invariants:
+--  1)  B and C bracket the root
+--  2)  |f(B)| <= |f(C)|
+--  3)  min(f(B),f(C)) <= f(A) <= max(f(B),f(C))
 -- |Working state for Brent's root-finding method.
 data Brent a b = Brent
     { brA   :: !a
@@ -18,53 +22,50 @@ data Brent a b = Brent
     , brFB  :: !b
     , brC   :: !a
     , brFC  :: !b
-    , brD   :: a
     , brE   :: a
     } deriving (Eq, Show)
 
 -- TODO: clean up this mess!
 instance RealFloat a => RootFinder Brent a a where
-    initRootFinder f x1 x2 = fixMagnitudes (Brent x1 f1 x2 f2 x1 f1 dx dx)
+    initRootFinder f x1 x2 = fixMagnitudes (Brent x1 f1 x2 f2 x1 f1 dx)
         where f1 = f x1; f2 = f x2; dx = x2 - x1
     
-    stepRootFinder f r@(Brent a fa b fb c fc _ e)
+    stepRootFinder f r@(Brent a fa b fb c fc e)
         |  abs fa > abs fb
-        && abs e >= tol1
-        && 2 * p < max2p    = advance (p/q)
-        |  otherwise        = advance xm
+        && abs e                      >= min tol1 (2 * abs s)
+        && (3 * m - 2 * s) * signum s >= tol1
+                                = advance s s
+        |  otherwise            = advance m (b - a)
         where
-            -- Minimum step size and limits on 'p' to continue with inverse-quadratic interpolation
-            tol1 = 2 * eps * (abs b + 0.5)
-            max2p = min (3 * xm * q - abs (tol1 * q))
-                        (abs (e * q))
+            -- Minimum step size to continue with inverse-quadratic interpolation
+            tol1  = 2 * eps * (abs b + 0.5)
             
             -- midpoint for bisection step
-            xm = 0.5 * (c - b)
+            m = 0.5 * (c - b)
             
             -- subdivision point for inverse quadratic interpolation step
-            -- (p/q)
-            s = fb / fa
-            p = abs p'
-            q = if p' > 0 then negate q' else q'
-            (p',q') | a == c    = (2 * xm * s, 1 - s)
-                    | otherwise = let t = fa / fc
-                                      r = fb / fc
-                                   in ( s * (2 * xm * t * (t - r) - (b - a) * (r - 1))
-                                      , (t - 1) * (r - 1) * (s - 1)
-                                      )
+            s   | fa /= fc && fa /= fb
+                    = let a' = fa / (fc - fb)
+                          b' = fb / (fc - fa)
+                          c' = fc / (fb - fa)
+                       in (a' * b' * c) - ((a' * c' + 1) * b) + (a * b' * c')
+                | otherwise
+                    -- Fall back to linear interpolation when quadratic
+                    -- interpolation will yield nonsensical results.
+                    = fb * (c - b) / realToFrac (fb - fc)
             
-            -- Actual advancement used for both steps
-            advance d = reorder r{brA = b, brFA = fb, brB = b', brFB = f b'}
+            -- |Moves the current estimate by 'd' (or by tol1, whichever
+            -- is greater) and sets 'brE' to 'e', maintaining all invariants.
+            advance d e = update b' (f b') e r
                 where
-                    b' = if abs d > tol1 then b + d else b + abs tol1 * signum xm
+                    b' = if abs d > tol1 then b + d else b + tol1 * signum m
 
 
-    estimateRoot  Brent{brB = b}          = b
-    estimateError Brent{brB = b, brC = c} = c - b
+    estimateRoot  = brB
+    estimateError = brE
     converged   _ Brent{brFB = 0}   = True
-    converged tol br@Brent{brB = b} = abs (estimateError br) <= tol1
-        where
-            tol1 = 4 * eps * abs b + tol
+    converged tol br@Brent{brB = b, brE = e} = 
+        abs e <= 4 * eps * abs b + tol
 
 -- |Attempt to find a root of a function known to lie between x1 and x2, using 
 -- Brent's method.  The root will be refined till its accuracy is +-xacc.  
@@ -72,20 +73,14 @@ instance RealFloat a => RootFinder Brent a a where
 brent :: RealFloat a => (a -> a) -> a -> a -> a -> Either (Brent a a) a
 brent f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)
 
--- on input, (a,c) are prev bracket, b is new guess.
--- on output, b and c bracket the root and |f(b)| <= |f(c)|
--- and 'a' is either the prev guess or one of the new endpoints
--- if f(a) is outside the range [f(b), f(c)].
---
--- Basically, this ensures that the algorithm always tightens either the
--- bound on the domain or the bound on the range, and never loosens the bound
--- on the domain.  In rare cases, a midpoint step (but not an inverse-quadratic 
--- step) can loosen the bound on the range, if I understand correctly.
-reorder :: (Num a, Num b, Ord b) => Brent a b -> Brent a b
-reorder = fixMagnitudes . fixSigns
+-- |Updates the state by incorporating a new estimate and setting 'brE',
+-- maintaining all invariants.
+update :: (Num a, Num b, Ord b) => a -> b -> a -> Brent a b -> Brent a b
+update b fb e r@Brent{brB = a, brFB = fa} 
+    = fixMagnitudes (fixSigns r{brA = a, brFA = fa, brB = b, brFB = fb, brE = e})
 
--- Establish invariant that b and c bracket the root,
--- based on existing invariant that (a,c) already does.
+-- Establish invariant (1) that b and c bracket the root,
+-- based on precondition that (a,c) already does.
 -- 
 -- (a,c) brackets implies that either (b,c) or (a,b) brackets.  In the 
 -- former case, nothing needs to be done as (by construction) either fb is already
@@ -97,16 +92,12 @@ fixSigns :: (Num a, Num b, Ord b) => Brent a b -> Brent a b
 fixSigns br@Brent{ brA  =  a, brB  =  b
                  , brFA = fa, brFB = fb, brFC = fc }
     |  (fb > 0 && fc > 0) || (fb < 0 && fc < 0)
-    = br { brC = a, brFC = fa
-         , brD = d', brE = d'
-         }
+    = br { brC = a, brFC = fa }
     | otherwise 
     = br
-    where d' = b - a
 
--- Establish invariant that |f(c)| >= |f(b)|.
--- If it is not already so, reset 'a' as well to ensure 'fa' falls
--- between fb and fc.
+-- Establish invariant (2) that |f(c)| >= |f(b)| and invariant (3) that
+-- 'fa' falls between fb and fc.
 fixMagnitudes :: (Num b, Ord b) => Brent a b -> Brent a b
 fixMagnitudes br@Brent{ brC  =  c, brB  =  b
                       , brFC = fc, brFB = fb }
