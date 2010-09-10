@@ -2,7 +2,9 @@
         MultiParamTypeClasses,
         FlexibleInstances
   #-}
-module Math.Root.Finder.InverseQuadratic where
+module Math.Root.Finder.InverseQuadratic
+    ( InverseQuadratic
+    ) where
 
 import Math.Root.Finder
 
