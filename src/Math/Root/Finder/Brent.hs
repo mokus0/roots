@@ -56,6 +56,12 @@ instance RealFloat a => RootFinder Brent a a where
             
             -- |Moves the current estimate by 'd' (or by tol1, whichever
             -- is greater) and sets 'brE' to 'e', maintaining all invariants.
+            -- Ensuring that at least some tiny jump is made allows quick 
+            -- discovery and termination in the case where the current best
+            -- estimate is already nearly on top of the root.  Without such
+            -- a check, the method would repeatedly tighten the 'c' bound
+            -- by bisection every other step, which is really rather stupid
+            -- if 'b' is already sitting on a root.
             advance d e = update b' (f b') e r
                 where
                     b' = if abs d > tol1 then b + d else b + tol1 * signum m
