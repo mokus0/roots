@@ -14,6 +14,7 @@ import Text.Printf
 --  1)  B and C bracket the root
 --  2)  |f(B)| <= |f(C)|
 --  3)  min(f(B),f(C)) <= f(A) <= max(f(B),f(C))
+--  4)  e >= 0
 -- |Working state for Brent's root-finding method.
 data Brent a b = Brent
     { brA   :: !a
@@ -31,10 +32,10 @@ instance RealFloat a => RootFinder Brent a a where
         where f1 = f x1; f2 = f x2; dx = x2 - x1
     
     stepRootFinder f r@(Brent a fa b fb c fc e)
-        |  abs e                >= 2 * min tol1 abs_s       -- require that the method be making progress, overall
+        |  e                    >= 2 * min tol1 abs_s       -- require that the method be making progress, overall
         && 1.5 * m * signum s   >= tol1 + abs_s             -- require that the proposed step is getting closer to 'b' - specifically, s should be between 0 and 0.75*(c - b)
-                    = advance s s
-        | otherwise = advance m (b - a)
+                    = advance s abs_s
+        | otherwise = advance m (abs (b - a))
         where
             -- Minimum step size to continue with inverse-quadratic interpolation
             tol1  = eps * (abs b + 0.5)
@@ -62,7 +63,7 @@ instance RealFloat a => RootFinder Brent a a where
             -- a check, the method would repeatedly tighten the 'c' bound
             -- by bisection every other step, which is really rather stupid
             -- if 'b' is already sitting on a root.
-            advance d e = update b' (f b') e r
+            advance d newE = update b' (f b') newE r
                 where
                     b' = if abs d > tol1 then b + d else b + tol1 * signum m
 
@@ -70,7 +71,7 @@ instance RealFloat a => RootFinder Brent a a where
     estimateRoot  = brB
     estimateError = brE
     converged   _ Brent{brFB = 0}   = True
-    converged tol br@Brent{brB = b, brE = e} = 
+    converged tol Brent{brB = b, brE = e} = 
         abs e <= 4 * eps * abs b + tol
 
 -- |Attempt to find a root of a function known to lie between x1 and x2, using 
@@ -95,7 +96,7 @@ update b fb e r@Brent{brB = a, brFB = fa}
 -- c and fc are both (by the existing invariants - (a,c) bracket, |f(c)| >= |f(a)|) 
 -- outside the new region of interest.
 fixSigns :: (Num a, Num b, Ord b) => Brent a b -> Brent a b
-fixSigns br@Brent{ brA  =  a, brB  =  b
+fixSigns br@Brent{ brA  =  a
                  , brFA = fa, brFB = fb, brFC = fc }
     |  (fb > 0 && fc > 0) || (fb < 0 && fc < 0)
     = br { brC = a, brFC = fa }
