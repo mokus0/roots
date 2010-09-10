@@ -27,7 +27,7 @@ data Brent a b = Brent
     } deriving (Eq, Show)
 
 -- TODO: clean up this mess!
-instance RealFloat a => RootFinder Brent a a where
+instance (RealFloat a, Real b, Fractional b) => RootFinder Brent a b where
     initRootFinder f x1 x2 = fixMagnitudes (Brent x1 f1 x2 f2 x1 f1 dx)
         where f1 = f x1; f2 = f x2; dx = x2 - x1
     
@@ -46,14 +46,14 @@ instance RealFloat a => RootFinder Brent a a where
             
             -- subdivision point for inverse quadratic interpolation step
             s   | fa /= fc && fa /= fb
-                    = let a' = fa / (fc - fb)
-                          b' = fb / (fc - fa)
-                          c' = fc / (fb - fa)
+                    = let a' = realToFrac (fa / (fc - fb))
+                          b' = realToFrac (fb / (fc - fa))
+                          c' = realToFrac (fc / (fb - fa))
                        in (a' * b' * c) - ((a' * c' + 1) * b) + (a * b' * c')
                 | otherwise
                     -- Fall back to linear interpolation when quadratic
                     -- interpolation will yield nonsensical results.
-                    = fb * (c - b) / realToFrac (fb - fc)
+                    = (c - b) * realToFrac (fb / (fb - fc))
             
             -- |Moves the current estimate by 'd' (or by tol1, whichever
             -- is greater) and sets 'brE' to 'e', maintaining all invariants.
