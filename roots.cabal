@@ -11,9 +11,9 @@ license:                PublicDomain
 homepage:               /dev/null
 
 category:               Math, Numerical
-synopsis:               Root-finding algorithms
+synopsis:               Root-finding algorithms (1-dimensional)
 description:            Framework for and a few implementations of
-                        numerical root-finding algorithms.
+                        (1-dimensional) numerical root-finding algorithms.
 
 tested-with:            GHC == 6.8.3,
                         GHC == 6.10.4,
