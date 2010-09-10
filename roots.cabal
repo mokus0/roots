@@ -30,6 +30,7 @@ Library
                         Math.Root.Finder
                         Math.Root.Finder.Bisection
                         Math.Root.Finder.Brent
+                        Math.Root.Finder.Dekker
                         Math.Root.Finder.FalsePosition
                         Math.Root.Finder.InverseQuadratic
                         Math.Root.Finder.Newton
