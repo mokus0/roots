@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
-module Math.Root.Finder.Dekker (Dekker) where
+module Math.Root.Finder.Dekker (Dekker, dekker) where
 
 import Math.Root.Finder
 
@@ -9,6 +9,13 @@ import Math.Root.Finder
 --  2) abs fB <= abs fA
 --  3) (oldB-a)*(oldB-b) >= 0
 data Dekker a b = Dekker !a !b !a !b !a !b  deriving (Eq, Show)
+
+-- |@dekker f x1 x2 xacc@:  attempt to find a root of a function known to 
+-- lie between x1 and x2, using Dekker's method.  The root will be refined
+-- till its accuracy is +-xacc.  If convergence fails, returns the final
+-- state of the search.
+dekker :: RealFloat a => (a -> a) -> a -> a -> a -> Either (Dekker a a) a
+dekker f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)
 
 instance (Fractional a, Ord a, Real b, Fractional b, Ord b) => RootFinder Dekker a b where
     initRootFinder f x0 x1 

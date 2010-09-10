@@ -5,8 +5,9 @@ module Math.Root.Finder.Secant
 
 import Math.Root.Finder
 
--- |Using the secant method, return the root of a function thought to lie between
--- x1 and x2.  The root is refined until its accuracy is +-xacc.
+-- | @secant f x1 x2 xacc@: Using the secant method, return the root of a
+-- function thought to lie between x1 and x2.  The root is refined until its
+-- accuracy is +-xacc.
 secant :: (Ord a, Fractional a) => (a -> a) -> a -> a -> a -> Either (SecantMethod a a) a
 secant f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)
 

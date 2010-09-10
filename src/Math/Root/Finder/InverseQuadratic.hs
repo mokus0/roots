@@ -2,14 +2,19 @@
         MultiParamTypeClasses,
         FlexibleInstances
   #-}
-module Math.Root.Finder.InverseQuadratic
-    ( InverseQuadratic
-    ) where
+module Math.Root.Finder.InverseQuadratic (InverseQuadratic, inverseQuadratic) where
 
 import Math.Root.Finder
 
 data InverseQuadratic a b = InverseQuadratic !a !b !a !b !a !b
     deriving (Eq, Show)
+
+-- |@inverseQuadratic f x1 x2 xacc@:  attempt to find a root of a function 
+-- known to lie between x1 and x2, using the inverse quadratic interpolation 
+-- method.  The root will be refined till its accuracy is +-xacc.  If
+-- convergence fails, returns the final state of the search.
+inverseQuadratic :: RealFloat a => (a -> a) -> a -> a -> a -> Either (InverseQuadratic a a) a
+inverseQuadratic f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)
 
 instance (Fractional a, Ord a, Real b, Fractional b) => RootFinder InverseQuadratic a b where
     initRootFinder f x1 x2 = InverseQuadratic x0 (f x0) x1 (f x1) x2 (f x2)

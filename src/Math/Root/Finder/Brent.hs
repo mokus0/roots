@@ -74,9 +74,10 @@ instance (RealFloat a, Real b, Fractional b) => RootFinder Brent a b where
     converged tol Brent{brB = b, brE = e} = 
         abs e <= 4 * eps * abs b + tol
 
--- |Attempt to find a root of a function known to lie between x1 and x2, using 
--- Brent's method.  The root will be refined till its accuracy is +-xacc.  
--- If convergence fails, returns the final state of the search.
+-- |@brent f x1 x2 xacc@:  attempt to find a root of a function known to 
+-- lie between x1 and x2, using Brent's method.  The root will be refined
+-- till its accuracy is +-xacc.  If convergence fails, returns the final
+-- state of the search.
 brent :: RealFloat a => (a -> a) -> a -> a -> a -> Either (Brent a a) a
 brent f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)
 

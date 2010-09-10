@@ -6,6 +6,10 @@ module Math.Root.Finder.Ridders
 
 import Math.Root.Finder
 
+-- |@ridders f x1 x2 xacc@:  attempt to find a root of a function known to 
+-- lie between x1 and x2, using Ridders' method.  The root will be refined
+-- till its accuracy is +-xacc.  If convergence fails, returns the final
+-- state of the search.
 ridders :: (Ord a, Floating a) => (a -> a) -> a -> a -> a -> Either (RiddersMethod a a) a
 ridders f x1 x2 xacc = fmap estimateRoot (findRoot f x1 x2 xacc)
 
