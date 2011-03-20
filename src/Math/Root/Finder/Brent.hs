@@ -38,7 +38,9 @@ instance (RealFloat a, Real b, Fractional b) => RootFinder Brent a b where
         | otherwise = advance m (abs (b - a))
         where
             -- Minimum step size to continue with inverse-quadratic interpolation
-            tol1  = eps * (abs b + 0.5)
+            -- This should not be too low; if it is, convergence can be
+            -- spectacularly slow
+            tol1  = 1e-3 * (abs b + 0.5)
             abs_s = abs s
             
             -- midpoint for bisection step
@@ -73,6 +75,8 @@ instance (RealFloat a, Real b, Fractional b) => RootFinder Brent a b where
     converged   _ Brent{brFB = 0}   = True
     converged tol Brent{brB = b, brE = e} = 
         abs e <= 4 * eps * abs b + tol
+    
+    defaultNSteps = realFloatDefaultNSteps 5
 
 -- |@brent f x1 x2 xacc@:  attempt to find a root of a function known to 
 -- lie between x1 and x2, using Brent's method.  The root will be refined

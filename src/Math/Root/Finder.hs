@@ -6,6 +6,7 @@ module Math.Root.Finder
     , traceRoot
     , findRoot, findRootN
     , eps
+    , realFloatDefaultNSteps
     ) where
 
 import Control.Monad.Instances ()
@@ -111,9 +112,7 @@ traceRoot f a b mbEps = runRootFinder cons f start
     where
         start = initRootFinder f a b
         
-        cons _n x rest
-            | done x rest   = [x]
-            | otherwise     = x : rest
+        cons _n x rest = x : if done x rest then [] else rest
         
         -- if tracing with no convergence test, apply a naive test
         -- to bail out if the root stops changing.  This is provided 
@@ -156,3 +155,21 @@ eps = eps'
     where
         eps' = encodeFloat 1 (1 - floatDigits eps')
 
+-- |For 'RealFloat' types, computes a suitable default step limit based
+-- on the precision of the type and a margin of error.
+realFloatDefaultNSteps :: RealFloat a => Float -> Tagged (r a b) Int
+realFloatDefaultNSteps margin = nSteps
+    where
+        f :: (Int -> Tagged (r a b) Int) -> (a -> Int) -> a -> Tagged (r a b) Int
+        f = (.)
+        
+        nSteps :: RealFloat a => Tagged (r a b) Int
+        nSteps = f Tagged n 0
+        
+        n :: RealFloat a => a -> Int
+        n x = round $ product
+            [ margin
+            , realToFrac (floatDigits x)
+            , logBase 2 (realToFrac (floatRadix x))
+            ]
+    
