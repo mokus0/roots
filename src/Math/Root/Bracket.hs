@@ -3,7 +3,7 @@ module Math.Root.Bracket where
 
 -- |Predicate that returns 'True' whenever the given pair of points brackets
 -- a root of the given function.
-brackets :: (Eq a, Num b) => (a -> b) -> (a,a) -> Bool
+brackets :: (Eq a, Eq b, Num b) => (a -> b) -> (a,a) -> Bool
 brackets f (x1,x2)
     | x1 == x2  = f x1 == 0
     | otherwise = signum (f x1) /= signum (f x2)
@@ -12,7 +12,7 @@ brackets f (x1,x2)
 -- this function expands the range geometrically until a root is bracketed by 
 -- the returned values, returning a list of the successively expanded ranges.  
 -- The list will be finite if and only if the sequence yields a bracketing pair.
-bracket :: (Fractional a, Num b, Ord b) =>
+bracket :: (Fractional a, Eq a, Num b, Ord b) =>
            (a -> b) -> a -> a -> [(a, a)]
 bracket f x1 x2
     | x1 == x2  = error "bracket: empty range"
@@ -32,7 +32,7 @@ bracket f x1 x2
 -- [x1,x2], subdivide the interval into n equally spaced segments and search 
 -- for zero crossings of the function.  The returned list will contain all 
 -- bracketing pairs found.
-subdivideAndBracket :: (Num b, Fractional a, Integral c) =>
+subdivideAndBracket :: (Num b, Eq b, Fractional a, Integral c) =>
                        (a -> b) -> a -> a -> c -> [(a, a)]
 subdivideAndBracket f x1 x2 n = 
     [ (x1, x2)

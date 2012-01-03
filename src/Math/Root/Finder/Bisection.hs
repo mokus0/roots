@@ -11,7 +11,7 @@ import Math.Root.Finder
 data Bisect a b = Bisect { _bisX :: !a, _bisF :: !b , _bisDX :: !a }
     deriving (Eq, Ord, Show)
 
-instance (Fractional a, Ord b, Num b) => RootFinder Bisect a b where
+instance (Fractional a, Eq a, Ord b, Num b) => RootFinder Bisect a b where
     initRootFinder f x1 x2
         | f1 < 0    = Bisect x1 f1 (x2-x1)
         | otherwise = Bisect x2 f2 (x1-x2)
