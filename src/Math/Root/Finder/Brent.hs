@@ -123,7 +123,7 @@ fixMagnitudes br@Brent{ brC  =  c, brB  =  b
 
 -- |debugging function to show a nice trace of the progress of the algorithm
 _traceBrent :: (PrintfArg a, RealFloat a,
-                PrintfArg b, Ord b, Num b,
+                PrintfArg b, Ord b, RealFrac b,
                 RootFinder Brent a b) =>
                (a -> b) -> Maybe (a, a) -> IO ()
 _traceBrent f mbRange = do
